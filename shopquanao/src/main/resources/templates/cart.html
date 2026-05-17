@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng Của Bạn - N11NHK Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+        body { background-color: #f9fbf9; color: #2c3e50; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; min-height: 100vh;}
+
+        .navbar { background-color: #ffffff !important; box-shadow: 0 2px 15px rgba(0,0,0,0.04) !important; }
+        .navbar-brand { color: #52796f !important; font-weight: 800; font-size: 1.6rem; }
+
+        .btn-theme { background-color: #84a98c; color: white; border: none; font-weight: 600; transition: 0.3s;}
+        .btn-theme:hover { background-color: #52796f; color: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(82, 121, 111, 0.2);}
+
+        .card-custom { background: #fff; border: 1px solid #eef2ee; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
+        .table > :not(caption) > * > * { padding: 1.2rem 1rem; border-bottom-color: #eef2ee; vertical-align: middle; }
+
+        .btn-delete { color: #e63946; background: #fff1f2; border-radius: 10px; border: none; padding: 8px 12px; transition: 0.2s;}
+        .btn-delete:hover { background: #e63946; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top py-2 border-bottom border-light mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="bi bi-shop-window"></i> N11NHK Shop</a>
+        <a th:href="@{/}" class="btn btn-outline-secondary rounded-pill fw-bold"><i class="bi bi-arrow-left"></i> Tiếp tục mua sắm</a>
+    </div>
+</nav>
+
+<div class="container mb-5 flex-grow-1">
+    <h2 class="fw-bold mb-4" style="color: #354f52;"><i class="bi bi-bag-check"></i> Giỏ hàng của bạn</h2>
+
+    <div th:if="${#lists.isEmpty(cartItems)}" class="text-center py-5 card-custom">
+        <i class="bi bi-cart-x text-muted" style="font-size: 5rem;"></i>
+        <h3 class="mt-3 text-secondary fw-bold">Giỏ hàng đang trống</h3>
+        <p class="text-muted">Có vẻ như bạn chưa chọn món đồ nào.</p>
+        <a th:href="@{/}" class="btn btn-theme rounded-pill px-4 mt-2">Mua sắm ngay</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(cartItems)}" class="row g-4">
+        <div class="col-lg-8">
+            <div class="card-custom p-0 overflow-hidden">
+                <table class="table mb-0">
+                    <thead style="background-color: #f9fbf9; color: #52796f;">
+                    <tr>
+                        <th class="ps-4">Sản Phẩm</th>
+                        <th>Đơn Giá</th>
+                        <th>Số Lượng</th>
+                        <th>Thành Tiền</th>
+                        <th class="text-center pe-4">Xóa</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${cartItems}">
+                        <td class="ps-4">
+                            <h6 class="fw-bold mb-1 text-dark" th:text="${item.sanPham.name}">Tên SP</h6>
+                            <small class="text-muted" th:text="${item.sanPham.danhMuc != null ? item.sanPham.danhMuc.name : ''}">Danh mục</small>
+                        </td>
+                        <td class="fw-semibold text-secondary" th:text="${#numbers.formatDecimal(item.sanPham.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">Giá</td>
+                        <td class="fw-bold fs-5 text-dark" th:text="${item.quantity}">SL</td>
+                        <td class="fw-bold" style="color: #52796f;" th:text="${#numbers.formatDecimal(item.sanPham.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'">Tổng</td>
+                        <td class="text-center pe-4">
+                            <a th:href="@{/cart/remove/{id}(id=${item.sanPham.id})}" class="btn-delete text-decoration-none">
+                                <i class="bi bi-trash3-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-custom p-4 sticky-top" style="top: 100px;">
+                <h4 class="fw-bold border-bottom pb-3 mb-4" style="color: #354f52;">Tóm tắt đơn hàng</h4>
+
+                <div class="d-flex justify-content-between mb-3 text-secondary fw-semibold">
+                    <span>Tổng phụ:</span>
+                    <span th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4 text-secondary fw-semibold">
+                    <span>Phí vận chuyển:</span>
+                    <span class="text-success">Miễn phí</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4 pt-3 border-top">
+                    <span class="fs-5 fw-bold" style="color: #354f52;">Tổng cộng:</span>
+                    <span class="fs-4 fw-bold" style="color: #84a98c;" th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
+                </div>
+
+                <a th:href="@{/checkout}" class="btn btn-theme w-100 py-3 rounded-pill fs-5">
+                    TIẾN HÀNH THANH TOÁN <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="py-4 text-center mt-auto" style="background-color: #e8f0e9; color: #52796f;">
+    <p class="mb-0 fw-semibold">&copy; 2026 N11NHK Shop. Tôn vinh nét đẹp nhẹ nhàng.</p>
+</footer>
+
+</body>
+</html>

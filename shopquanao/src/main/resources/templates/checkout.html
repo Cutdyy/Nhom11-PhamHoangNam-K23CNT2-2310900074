@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - N11NHK Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .checkout-header { border-bottom: 2px solid #212529; padding-bottom: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}"><i class="bi bi-shop"></i> N11NHK Shop - Thanh Toán</a>
+        <a class="nav-link text-white" th:href="@{/cart}"><i class="bi bi-cart3"></i> Quay lại giỏ hàng</a>
+    </div>
+</nav>
+
+<div class="container mb-5">
+    <div class="row">
+
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="checkout-header fw-bold">Thông tin giao hàng</h4>
+
+                    <form th:action="@{/checkout/process}" th:object="${donHang}" method="POST">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Số điện thoại nhận hàng <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" class="form-control" th:field="*{soDienThoai}" placeholder="Ví dụ: 0912345678" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Địa chỉ giao hàng chi tiết <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <textarea class="form-control" th:field="*{diaChiGiao}" rows="3" placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..." required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill"></i> <strong>Phương thức thanh toán:</strong> Hiện tại shop chỉ hỗ trợ Thanh toán khi nhận hàng (COD).
+                        </div>
+
+                        <button type="submit" class="btn btn-dark btn-lg w-100 fw-bold mt-2">
+                            XÁC NHẬN ĐẶT HÀNG
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 bg-white">
+                <div class="card-body p-4">
+                    <h4 class="checkout-header fw-bold">Tóm tắt đơn hàng</h4>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between lh-sm px-0 py-3" th:each="item : ${cartItems}">
+                            <div>
+                                <h6 class="my-0 fw-semibold" th:text="${item.sanPham.name}">Tên SP</h6>
+                                <small class="text-muted" th:text="'Số lượng: ' + ${item.quantity}">SL: 1</small>
+                            </div>
+                            <span class="text-danger fw-semibold" th:text="${#numbers.formatDecimal(item.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Phí vận chuyển:</span>
+                        <span class="fw-semibold text-success">Miễn phí</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold fs-5">Tổng thanh toán:</span>
+                        <strong class="fs-4 text-danger" th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tin Tức & Xu Hướng - N11NHK Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+
+        body {
+            background-color: #f9fbf9;
+            color: #2c3e50;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR STYLE */
+        .navbar { background-color: #ffffff !important; box-shadow: 0 2px 15px rgba(0,0,0,0.04) !important; }
+        .navbar-brand { color: #52796f !important; font-weight: 800; font-size: 1.6rem; }
+        .nav-link { color: #555 !important; font-weight: 600; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #52796f !important; }
+
+        /* THEME BUTTONS & SEARCH */
+        .btn-theme { background-color: #84a98c; color: white; border: none; font-weight: 600; }
+        .btn-theme:hover { background-color: #52796f; color: white; }
+        .btn-outline-theme { border: 2px solid #84a98c; color: #84a98c; font-weight: 600; background: transparent; }
+        .btn-outline-theme:hover { background-color: #84a98c; color: white; }
+        .search-bar .form-control { border-color: #cadfd0; background-color: #f9fbf9; }
+
+        /* BLOG CARD */
+        .blog-card {
+            background: #fff; border: 1px solid #eef2ee; border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: all 0.3s ease;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px); box-shadow: 0 15px 30px rgba(132, 169, 140, 0.15);
+        }
+        .blog-image-container { overflow: hidden; border-radius: 16px 16px 0 0; }
+        .blog-card img { transition: transform 0.5s ease; }
+        .blog-card:hover img { transform: scale(1.05); }
+
+        .blog-category { color: #84a98c; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;}
+        .blog-title { color: #354f52; font-weight: 800; text-decoration: none; transition: 0.2s;}
+        .blog-title:hover { color: #52796f; }
+        .blog-date { color: #a0aab2; font-size: 0.85rem; font-weight: 600;}
+
+        /* BREADCRUMB HEADER */
+        .page-header {
+            background-color: #e8f0e9;
+            padding: 50px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 24px 24px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top py-2 border-bottom border-light">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="bi bi-shop-window"></i> N11NHK Shop</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-semibold ms-3 gap-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/products}">Sản phẩm</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-list-ul"></i> Danh mục
+                    </a>
+                    <ul class="dropdown-menu shadow-sm border-0" style="background-color: #f9fbf9;">
+                        <li th:each="dm : ${danhSachDanhMuc}">
+                            <a class="dropdown-item fw-semibold text-secondary" th:href="@{/danhmuc/{id}(id=${dm.id})}" th:text="${dm.name}"></a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/tintuc}">Tin tức</a></li>
+            </ul>
+
+            <form class="d-flex search-bar me-3" th:action="@{/search}" method="GET">
+                <input class="form-control rounded-start-pill ps-4" type="search" name="keyword" placeholder="Tìm trang phục...">
+                <button class="btn btn-theme rounded-end-pill px-3" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+
+            <div class="d-flex align-items-center gap-3">
+                <a th:href="@{/cart}" class="btn btn-outline-theme rounded-circle p-2 lh-1"><i class="bi bi-bag fs-5"></i></a>
+
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-outline-secondary fw-bold rounded-pill px-4">Đăng nhập</a>
+                </th:block>
+
+                <th:block sec:authorize="isAuthenticated()">
+                    <div class="dropdown">
+                        <button class="btn btn-theme rounded-pill px-4 dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span sec:authentication="name">User</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a sec:authorize="hasRole('ADMIN')" class="dropdown-item fw-bold text-warning" th:href="@{/admin/sanpham}"><i class="bi bi-gear"></i> Quản trị</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0 px-2">
+                                    <button type="submit" class="btn btn-danger btn-sm w-100 rounded-pill">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="fw-bold display-4 mb-3" style="color: #354f52;">Góc Thời Trang</h1>
+        <p class="text-muted fs-5 mb-0" style="max-width: 600px; margin: auto;">Cập nhật những xu hướng mới nhất, mẹo phối đồ cực chất và các câu chuyện truyền cảm hứng từ N11NHK.</p>
+    </div>
+</div>
+
+<div class="container mb-5 flex-grow-1">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5">
+
+        <div class="col">
+            <div class="card h-100 blog-card">
+                <div class="blog-image-container">
+                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                         class="card-img-top" alt="Blog Image" style="height: 240px; object-fit: cover;">
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <span class="blog-category mb-2 d-block">Xu Hướng</span>
+                    <a href="#" class="blog-title fs-5 mb-3 lh-base">Color Block: Sự bùng nổ của những gam màu nóng trong mùa Hè 2026</a>
+                    <p class="text-muted small mb-4">Khám phá cách phối màu phá cách nhưng vẫn giữ được nét thanh lịch cho những ngày nắng rực rỡ...</p>
+
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <span class="blog-date"><i class="bi bi-calendar3"></i> 15/05/2026</span>
+                        <a href="#" class="btn btn-link text-decoration-none fw-bold" style="color: #84a98c;">Đọc tiếp <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 blog-card">
+                <div class="blog-image-container">
+                    <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                         class="card-img-top" alt="Blog Image" style="height: 240px; object-fit: cover;">
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <span class="blog-category mb-2 d-block text-warning">Khuyến Mãi</span>
+                    <a href="#" class="blog-title fs-5 mb-3 lh-base">Mega Sale Giữa Năm: Săn ngay voucher giảm giá lên đến 50%</a>
+                    <p class="text-muted small mb-4">Chương trình tri ân khách hàng lớn nhất năm của N11NHK đã chính thức bắt đầu. Đừng bỏ lỡ!</p>
+
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <span class="blog-date"><i class="bi bi-calendar3"></i> 10/05/2026</span>
+                        <a href="#" class="btn btn-link text-decoration-none fw-bold" style="color: #84a98c;">Đọc tiếp <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 blog-card">
+                <div class="blog-image-container">
+                    <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                         class="card-img-top" alt="Blog Image" style="height: 240px; object-fit: cover;">
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <span class="blog-category mb-2 d-block text-info">Mẹo Vặt</span>
+                    <a href="#" class="blog-title fs-5 mb-3 lh-base">Bí quyết giữ quần Jean luôn như mới không phải ai cũng biết</a>
+                    <p class="text-muted small mb-4">Bạn thường xuyên giặt quần jean bằng máy? Hãy dừng lại và đọc ngay những mẹo nhỏ sau đây để bảo vệ phom dáng.</p>
+
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <span class="blog-date"><i class="bi bi-calendar3"></i> 02/05/2026</span>
+                        <a href="#" class="btn btn-link text-decoration-none fw-bold" style="color: #84a98c;">Đọc tiếp <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer class="mt-auto py-4 text-center" style="background-color: #e8f0e9; color: #52796f;">
+    <div class="container">
+        <p class="mb-0 fw-semibold">&copy; 2026 N11NHK Shop. Tôn vinh nét đẹp nhẹ nhàng.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

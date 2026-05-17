@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tất Cả Sản Phẩm - N11NHK Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+
+        body {
+            background-color: #f9fbf9;
+            color: #2c3e50;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR STYLE */
+        .navbar { background-color: #ffffff !important; box-shadow: 0 2px 15px rgba(0,0,0,0.04) !important; }
+        .navbar-brand { color: #52796f !important; font-weight: 800; font-size: 1.6rem; }
+        .nav-link { color: #555 !important; font-weight: 600; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #52796f !important; }
+
+        /* THEME BUTTONS & SEARCH */
+        .btn-theme { background-color: #84a98c; color: white; border: none; font-weight: 600; }
+        .btn-theme:hover { background-color: #52796f; color: white; }
+        .btn-outline-theme { border: 2px solid #84a98c; color: #84a98c; font-weight: 600; background: transparent; }
+        .btn-outline-theme:hover { background-color: #84a98c; color: white; }
+        .search-bar .form-control { border-color: #cadfd0; background-color: #f9fbf9; }
+
+        /* PRODUCT CARD */
+        .product-card {
+            background: #fff; border: 1px solid #eef2ee; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(132, 169, 140, 0.12); border-color: #cadfd0;
+        }
+        .product-image-container { overflow: hidden; border-radius: 12px 12px 0 0; }
+        .product-card img { transition: transform 0.5s ease; }
+        .product-card:hover img { transform: scale(1.05); }
+        .price-text { color: #52796f; font-weight: 800; font-size: 1.2rem; }
+        .badge-category { background-color: #e8f0e9; color: #52796f; font-weight: 600; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;}
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top py-2 border-bottom border-light">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="bi bi-shop-window"></i> N11NHK Shop</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-semibold ms-3 gap-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/products}">Sản phẩm</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-list-ul"></i> Danh mục
+                    </a>
+                    <ul class="dropdown-menu shadow-sm border-0" style="background-color: #f9fbf9;">
+                        <li th:each="dm : ${danhSachDanhMuc}">
+                            <a class="dropdown-item fw-semibold text-secondary" th:href="@{/danhmuc/{id}(id=${dm.id})}" th:text="${dm.name}"></a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="#">Tin tức</a></li>
+            </ul>
+
+            <form class="d-flex search-bar me-3" th:action="@{/search}" method="GET">
+                <input class="form-control rounded-start-pill ps-4" type="search" name="keyword" placeholder="Tìm trang phục...">
+                <button class="btn btn-theme rounded-end-pill px-3" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+
+            <div class="d-flex align-items-center gap-3">
+                <a th:href="@{/cart}" class="btn btn-outline-theme rounded-circle p-2 lh-1"><i class="bi bi-bag fs-5"></i></a>
+
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-outline-secondary fw-bold rounded-pill px-4">Đăng nhập</a>
+                </th:block>
+
+                <th:block sec:authorize="isAuthenticated()">
+                    <div class="dropdown">
+                        <button class="btn btn-theme rounded-pill px-4 dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span sec:authentication="name">User</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a sec:authorize="hasRole('ADMIN')" class="dropdown-item fw-bold text-warning" th:href="@{/admin/sanpham}"><i class="bi bi-gear"></i> Quản trị</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0 px-2">
+                                    <button type="submit" class="btn btn-danger btn-sm w-100 rounded-pill">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5 mb-5 flex-grow-1">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none" style="color: #84a98c;">Trang chủ</a></li>
+            <li class="breadcrumb-item active fw-bold text-secondary" aria-current="page">Tất cả sản phẩm</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-3 border-bottom border-light-subtle">
+        <h2 class="fw-bold m-0" style="color: #354f52;">Toàn Bộ Bộ Sưu Tập</h2>
+        <span class="text-muted fw-semibold" th:text="${#lists.size(danhSachSanPham)} + ' sản phẩm'">0 sản phẩm</span>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        <div class="col" th:each="sp : ${danhSachSanPham}">
+            <div class="card h-100 product-card">
+                <div class="product-image-container">
+                    <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                         class="card-img-top" alt="Ảnh sản phẩm" style="height: 250px; object-fit: cover;">
+                </div>
+
+                <div class="card-body d-flex flex-column p-3">
+                    <div class="mb-1">
+                        <span class="badge-category" th:text="${sp.danhMuc != null ? sp.danhMuc.name : 'Khác'}">Phân loại</span>
+                    </div>
+                    <h6 class="card-title mt-2 mb-2 fw-bold" th:text="${sp.name}">Tên sản phẩm</h6>
+
+                    <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top" style="border-color: #f0f0f0 !important;">
+                        <span class="price-text" th:text="${#numbers.formatDecimal(sp.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">Giá tiền</span>
+                        <a th:href="@{/sanpham/{id}(id=${sp.id})}" class="btn btn-outline-theme btn-sm rounded-pill px-3">
+                            Chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(danhSachSanPham)}" class="col-12 text-center text-muted mt-5 py-5 w-100">
+            <i class="bi bi-bag-x fs-1 text-secondary"></i>
+            <h4 class="mt-3">Hiện tại chưa có sản phẩm nào.</h4>
+        </div>
+    </div>
+</div>
+
+<footer class="mt-auto py-4 text-center" style="background-color: #e8f0e9; color: #52796f;">
+    <div class="container">
+        <p class="mb-0 fw-semibold">&copy; 2026 N11NHK Shop. Tôn vinh nét đẹp nhẹ nhàng.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
